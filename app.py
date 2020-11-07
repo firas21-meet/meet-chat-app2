@@ -13,7 +13,7 @@ from sqlalchemy.orm import sessionmaker
 app = Flask(__name__)
 
 app.config[
-    'SQLALCHEMY_DATABASE_URI'] = 'sqlite:////home/student/PycharmProjects/page2/login-signup-app-in-flask-python-master/mydb.db'
+    'SQLALCHEMY_DATABASE_URI'] = 'sqlite:////home/student/PycharmProjects/page2/meet-chat-app2/mydb.db'
 
 app.config['SECRET_KEY'] = 'flaskrocks'
 db = SQLAlchemy(app)
@@ -80,16 +80,14 @@ def query_by_name(their_name):
    Print all the students
    in the database.
    """
-    student = db.session.query(
-       names).filter_by(
-       name=their_name).first()
+    student = db.session.query(names).filter_by(name=their_name).first()
     return student
 
 ######### find info by the name of the student >>>>>
-name_ofStusent = 'firas'
-print(query_by_name(name_ofStusent).name)
-print(query_by_name(name_ofStusent).password)
-print(query_by_name(name_ofStusent).email)
+#studentname_ofStusent = 'firas'
+#print(query_by_name(name_ofStusent).name)
+#print(query_by_name(name_ofStusent).password)
+#print(query_by_name(name_ofStusent).email)
 
 
 def update_lab_status(name, password):
@@ -117,6 +115,28 @@ def delete_student(their_name):
 
 
 #delete_student("1")
+
+def query_by_id(their_id):
+
+    """
+   Print all the students
+   in the database.
+   """
+    student = db.session.query(
+       names).filter_by(
+       id=their_id).first()
+    return student
+#### for loop to show you the all student i our app
+def for_allStudent():
+    z=1
+    for i in range(20):
+        if z!= 7:
+            print('ID : '+str(query_by_id(z).id)+' ------name: ' + query_by_id(z).name+' password : '+query_by_id(z).password+' email : '+query_by_id(z).email)
+            z+=1
+        else:
+            z+=1
+#for_allStudent()
+
 print ("done")
 
 @app.route('/<username>')
@@ -160,7 +180,7 @@ def login():
         print("post")
         if req['submit_button'] == 'Log_In':
             print(req["email"])
-            user_log = names.query.filter_by(email=form.email.data).first()
+            user_log = db.session.query(names).filter_by(email=form.email.data).first()
             print("all right")
             print('user log' + str(user_log.password))
             print('current' + str(form.password.data))
