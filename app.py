@@ -13,7 +13,7 @@ from sqlalchemy.orm import sessionmaker
 app = Flask(__name__)
 
 app.config[
-    'SQLALCHEMY_DATABASE_URI'] = 'sqlite:////home/student/PycharmProjects/page2/meet-chat-app2/mydb.db'
+    'SQLALCHEMY_DATABASE_URI'] = 'sqlite:///mydb.db'
 
 app.config['SECRET_KEY'] = 'flaskrocks'
 db = SQLAlchemy(app)
