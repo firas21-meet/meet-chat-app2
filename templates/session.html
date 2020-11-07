@@ -5,12 +5,18 @@
   </head>
   <body>
 
+
+    {% if messages %}
+      {% for message in messages %}
+      <h3>{{message.name}}: {{message.message}}</h3>
+      {%endfor%}
+    {%else%}
     <h3 style='color: #ccc;font-size: 30px;'>No message yet..</h3>
+    {%endif%}
     <div class="message_holder"></div>
 
-    <form action="" method="POST">
-      <input type="text" class="username" id="input1" placeholder="User Name"/>
-      <input type="text" id="input"  class="message" placeholder="Messages"/>
+    <form action="/post" method="POST">
+      <input type="text" id="input"  name="message" placeholder="Messages"/>
       <input type="submit" class="loginbutton"/>
     </form>
 

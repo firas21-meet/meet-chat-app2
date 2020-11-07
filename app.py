@@ -9,20 +9,16 @@ from wtforms.validators import InputRequired, Length, EqualTo, ValidationError
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+from database import *
+from flask import session as login_session
 ##################
 app = Flask(__name__)
-
-app.config[
-    'SQLALCHEMY_DATABASE_URI'] = 'sqlite:///mydb.db'
-
 app.config['SECRET_KEY'] = 'flaskrocks'
-db = SQLAlchemy(app)
 
 ############
 
-
 ############# chat app
-socketio = SocketIO(app)
+#socketio = SocketIO(app)
 
 
 # @app.route('/chat')
@@ -33,18 +29,17 @@ socketio = SocketIO(app)
 
 
 
-def messageReceived():
-    print('message was received!!!')
+#def messageReceived():
+ #   print('message was received!!!')
 
 
-@socketio.on('my event')
-def handle_my_custom_event(json):
-    print('received my event: ' + str(json))
-    socketio.emit('my response', json, callback=messageReceived)
+#@socketio.on('my event')
+#def handle_my_custom_event(json):
+#    print('received my event: ' + str(json))
+#    socketio.emit('my response', json, callback=messageReceived)
 
 
 ##-----------------------------------------------------------------------
-
 
 ###### log in and sigh up
 class registrants(FlaskForm):
@@ -62,80 +57,6 @@ class registrants(FlaskForm):
             raise ValidationError("Username already exists. Select a different username.")
 
 
-class names(db.Model):
-    __tablename__ = 'signedusers'
-    id = db.Column(Integer, primary_key=True)
-    email = db.Column(db.String(100))
-    password = db.Column(db.String(100))
-    name = db.Column(db.String(100))
-
-    def __init__(self, email, password, name):
-        self.email = email
-        self.password = password
-        self.name = name
-
-def query_by_name(their_name):
-
-    """
-   Print all the students
-   in the database.
-   """
-    student = db.session.query(names).filter_by(name=their_name).first()
-    return student
-
-######### find info by the name of the student >>>>>
-#studentname_ofStusent = 'firas'
-#print(query_by_name(name_ofStusent).name)
-#print(query_by_name(name_ofStusent).password)
-#print(query_by_name(name_ofStusent).email)
-
-
-def update_lab_status(name, password):
-   """
-   Update a student in the database, with
-   whether or not they have finished the lab
-   """
-   student_object = db.session.query(
-       names).filter_by(
-       name=name).first()
-   student_object.password = password
-   db.session.commit()
-
-######### to udate in the database
-#update_lab_status("1", '1')
-
-def delete_student(their_name):
-   """
-   Delete all students with a
-   certain name from the database.
-   """
-   db.session.query(names).filter_by(
-       name=their_name).delete()
-   db.session.commit()
-
-
-#delete_student("1")
-
-def query_by_id(their_id):
-
-    """
-   Print all the students
-   in the database.
-   """
-    student = db.session.query(
-       names).filter_by(
-       id=their_id).first()
-    return student
-#### for loop to show you the all student i our app
-def for_allStudent():
-    z=1
-    for i in range(20):
-        if z!= 7:
-            print('ID : '+str(query_by_id(z).id)+' ------name: ' + query_by_id(z).name+' password : '+query_by_id(z).password+' email : '+query_by_id(z).email)
-            z+=1
-        else:
-            z+=1
-#for_allStudent()
 
 print ("done")
 
@@ -162,9 +83,9 @@ def form():
             registered = names.query.all()
             return render_template('request.html', registered=registered)
         else:
-            entry = names(request.form['email'], request.form['password'], request.form['name'])
-            db.session.add(entry)
-            db.session.commit()
+            entry = Names(email=request.form['email'], password=request.form['password'],name= request.form['name'])
+            session.add(entry)
+            session.commit()
             print(request.form['email'] + '' + request.form['password'] + request.form['name'])
             return redirect(url_for('login'))
     return render_template("signup.html")
@@ -180,13 +101,26 @@ def login():
         print("post")
         if req['submit_button'] == 'Log_In':
             print(req["email"])
-            user_log = db.session.query(names).filter_by(email=form.email.data).first()
+            user_log = session.query(Names).filter_by(email=form.email.data).first()
             print("all right")
             print('user log' + str(user_log.password))
             print('current' + str(form.password.data))
             if form.password.data == user_log.password:
-                return render_template(('session.html'), name=form.email.data)
+                login_session['username']=user_log.name
+                return render_template(('session.html'), name=login_session['username'], messages=session.query(Messages).all())
     return render_template('login.html', form=form)
+
+@app.route('/post',methods=['GET','POST'])
+def post_message():
+  if request.method=="POST":
+    message1 = request.form["message"]
+    print (message1)
+    message2= Messages(name=login_session["username"],message=message1)
+    session.add(message2)
+    session.commit()
+    return render_template(('session.html'), name=login_session['username'], messages=session.query(Messages).all())
+  else:
+    return redirect(url_for('login'))
 
 
 if __name__ == '__main__':
